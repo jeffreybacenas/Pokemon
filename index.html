@@ -5,13 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokémon List</title>
 
-    <!-- Css Plugin -->
+    <!-- CSS -->
     <link rel="stylesheet" href="Assets/jquery/jquery.dataTables.min.css">
     <link rel="stylesheet" href="Assets/bootstrap/bootstrap.min.css">
 
-    <!-- Custom css -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="Assets/custom-css/style.css">
- </head>
+    <style>
+        /* Center the loading indicator */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Hide it initially */
+        }
+    </style>
+</head>
 <body>
     <div class="container">
         <div class="row card-container">
@@ -38,47 +48,65 @@
                                 
                             </tbody>
                         </table>
+                        <!-- Pagination with total Pokémon count -->
+                        <div id="pagination-container">
+                            <div class="pagination-info">Total Pokémon: <span id="totalPokemon">0</span></div>
+                            <ul class="pagination"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Javascript Plugin -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-pagination/1.2.7/jquery.pagination.min.js"></script>
     <script src="Assets/jquery/jquery.dataTables.min.js"></script>
-
     <script>
         $(document).ready(function () {
             // Show loading indicator
             $('#loading').show();
 
-            // Initialize DataTable with pagination
             const dataTable = $('#pokemonTable').DataTable();
 
-            // URL for the PokeAPI to fetch Pokémon data (no limit)
-            const pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon/';
+            // Get the current page length
+            const pageLength = dataTable.page.len();
 
             // Function to fetch and populate Pokémon data
             function fetchAndPopulateData(url) {
                 $.get(url, function (response) {
+                    const requests = [];
+
                     response.results.forEach(pokemon => {
                         // Fetch more details for each Pokémon using its URL
-                        $.get(pokemon.url, function (pokemonDetails) {
+                        const request = $.get(pokemon.url, function (pokemonDetails) {
                             const row = [pokemonDetails.name, getTypes(pokemonDetails.types)];
-                            dataTable.row.add(row).draw();
+                            dataTable.row.add(row);
 
                             // Check if all rows are added, then hide loading indicator
                             if (dataTable.rows().count() === response.results.length) {
                                 $('#loading').hide();
+                                dataTable.draw(); // Redraw the table to display all data
+                            }
+                        });
+
+                        requests.push(request);
+                    });
+
+                    // Wait for all requests to finish
+                    $.when.apply($, requests).then(function () {
+                        // Create pagination
+                        $('#pagination-container').pagination({
+                            dataSource: Array.from({ length: response.count }, (_, i) => i + 1),
+                            pageSize: 10,
+                            pageNumber: 1,
+                            callback: function (data, pagination) {
+                                // Update DataTable to display the selected page
+                                dataTable.page(pagination.pageNumber - 1).draw(false);
                             }
                         });
                     });
-
-                    // Load the next page if it exists
-                    if (response.next) {
-                        fetchAndPopulateData(response.next);
-                    }
                 });
             }
 
@@ -87,7 +115,9 @@
                 return types.map(type => type.type.name).join('/');
             }
 
+            //const pokeApiUrl = `https://pokeapi.co/api/v2/pokemon/?limit=${pageSize}&offset=${offset}`;
             // Start fetching Pokémon data
+            const pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon/?limit=' + pageLength;
             fetchAndPopulateData(pokeApiUrl);
         });
     </script>    
