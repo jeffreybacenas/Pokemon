@@ -1,0 +1,29 @@
+/* Center the card */
+.card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Adjust the height to your preference */
+}
+
+/* Pokémon-themed table styles */
+.pokemon-table {
+    background-color: #e5e5e5;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.pokemon-table th, .pokemon-table td {
+    border: 2px solid #f2f2f2;
+    padding: 8px;
+    text-align: center;
+}
+
+.pokemon-table th {
+    background-color: #ffcc00;
+    color: #333;
+}
+
+.pokemon-table td {
+    background-color: #f2f2f2;
+}
