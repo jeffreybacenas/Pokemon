@@ -8,7 +8,7 @@
 
 /* Pokémon-themed table styles */
 .pokemon-table {
-    background-color: #e5e5e5;
+    background-color: rgba(255, 255, 255, 0.8); /* Add a semi-transparent background color for better readability */
     border-collapse: collapse;
     width: 100%;
 }
@@ -26,4 +26,11 @@
 
 .pokemon-table td {
     background-color: #f2f2f2;
+}
+
+/* Pokémon-themed body background */
+body {
+    background-image: url('../image/bg-pokemon.jpg'); /* Replace with your Pokémon-themed image */
+    background-size: cover;
+    background-repeat: no-repeat;
 }
