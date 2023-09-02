@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Pokémon List</title>
 
     <!-- Css Plugin -->
     <link rel="stylesheet" href="Assets/jquery/jquery.dataTables.min.css">
@@ -15,11 +15,19 @@
 <body>
     <div class="container">
         <div class="row card-container">
-            <div class="col-md-6">
-                <div class="card pokemon-card">
+            <div class="col-md-10">
+                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Pokémon Table</h5>
-                        <table id="myTable" class="table table-striped table-bordered pokemon-table">
+                        <!-- Loading indicator -->
+                        <div id="loading" class="text-center">
+                            <p>Loading Pokémon data...</p>
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <table id="pokemonTable" class="table table-striped table-bordered pokemon-table">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -27,15 +35,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Pikachu</td>
-                                    <td>Electric</td>
-                                </tr>
-                                <tr>
-                                    <td>Charizard</td>
-                                    <td>Fire/Flying</td>
-                                </tr>
-                                <!-- Add more Pokémon data as needed -->
+                                
                             </tbody>
                         </table>
                     </div>
@@ -49,10 +49,47 @@
     <script src="Assets/jquery/jquery.dataTables.min.js"></script>
 
     <script>
-        $(document).ready( function () {
-            $('#myTable').DataTable();
-        } );
+        $(document).ready(function () {
+            // Show loading indicator
+            $('#loading').show();
+
+            // Initialize DataTable with pagination
+            const dataTable = $('#pokemonTable').DataTable();
+
+            // URL for the PokeAPI to fetch Pokémon data (no limit)
+            const pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon/';
+
+            // Function to fetch and populate Pokémon data
+            function fetchAndPopulateData(url) {
+                $.get(url, function (response) {
+                    response.results.forEach(pokemon => {
+                        // Fetch more details for each Pokémon using its URL
+                        $.get(pokemon.url, function (pokemonDetails) {
+                            const row = [pokemonDetails.name, getTypes(pokemonDetails.types)];
+                            dataTable.row.add(row).draw();
+
+                            // Check if all rows are added, then hide loading indicator
+                            if (dataTable.rows().count() === response.results.length) {
+                                $('#loading').hide();
+                            }
+                        });
+                    });
+
+                    // Load the next page if it exists
+                    if (response.next) {
+                        fetchAndPopulateData(response.next);
+                    }
+                });
+            }
+
+            // Function to extract and format Pokémon types
+            function getTypes(types) {
+                return types.map(type => type.type.name).join('/');
+            }
+
+            // Start fetching Pokémon data
+            fetchAndPopulateData(pokeApiUrl);
+        });
     </script>    
-    
 </body>
 </html>
