@@ -32,3 +32,18 @@ body {
 .card-container {
     margin-top: 100px;
 }
+/* Center the loading indicator */
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none; /* Hide it initially */
+}
+/* CSS to make Pokémon images smaller */
+.pokemon-image {
+    width: 50px; 
+    height: 50px;
+    cursor: pointer;
+}
+  

@@ -3,29 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon List</title>
+    <title>Pokéfolio</title>
 
+    <link rel="icon" type="image/x-icon" href="Assets/image/icon-pokemon.png">
     <!-- CSS -->
     <link rel="stylesheet" href="Assets/jquery/jquery.dataTables.min.css">
     <link rel="stylesheet" href="Assets/bootstrap/bootstrap.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="Assets/custom-css/style.css">
-    <style>
-        /* Center the loading indicator */
-        #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none; /* Hide it initially */
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <div class="row card-container">
-            <div class="col-md-10">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
                         <!-- Loading indicator -->
@@ -42,16 +33,33 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Type</th>
+                                    <th>Image</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 
                             </tbody>
                         </table>
-                        <!-- Pagination with total Pokémon count -->
-                        <div id="pagination-container">
-                            <div class="pagination-info">Total Pokémon: <span id="totalPokemon">0</span></div>
-                            <ul class="pagination"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for Pokémon Details -->
+            <div class="modal fade" id="pokemonModal" tabindex="-1" role="dialog" aria-labelledby="pokemonModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="pokemonModalLabel">Pokémon Details</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <img src="" alt="" id="modalPokemonImage" class="pokemon-image">
+                            </div>
+                            <h5 class="modal-title" id="modalPokemonName"></h5>
+                            <p class="modal-text" id="modalPokemonType"></p>
                         </div>
                     </div>
                 </div>
@@ -61,65 +69,89 @@
 
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-pagination/1.2.7/jquery.pagination.min.js"></script>
     <script src="Assets/jquery/jquery.dataTables.min.js"></script>
+    <script src="Assets/bootstrap/bootstrap.min.js"></script>
     <script>
         $(document).ready(function () {
-            // Show loading indicator
-            $('#loading').show();
+    const apiUrl = 'https://pokeapi.co/api/v2/pokemon';
+    const table = $('#pokemonTable').DataTable({
+        columns: [
+            { data: 'name' },
+            { data: 'types' },
+            { data: 'abilities' },
+            { data: 'stats' },
+            { data: 'image', render: function (data, type, full, meta) {
+                return `<img src="${data}" alt="${full.name}" class="pokemon-image" data-index="${meta.row}">`;
+            }}
+        ]
+    });
 
-            const dataTable = $('#pokemonTable').DataTable();
+    // Handle click on Pokémon image to display details in modal
+    $('#pokemonTable tbody').on('click', 'img.pokemon-image', function () {
+        const index = $(this).data('index'); // Get the index of the selected Pokémon
+        const pokemonData = table.row(index).data(); // Get all Pokémon data
+        const abilities = pokemonData.abilities.join(', '); // Join abilities into a string
+        const stats = pokemonData.stats.map(stat => `${stat.name}: ${stat.value}`).join('<br>'); // Create a formatted string for stats
+        const name = capitalizeFirstLetter(pokemonData.name);
+        const types = capitalizeFirstLetter(pokemonData.types);
+        const imageUrl = $(this).attr('src');
 
-            // Get the current page length
-            const pageLength = dataTable.page.len();
+        // Update the Pokémon details in the modal
+        $('#modalPokemonName').text(name);
+        $('#modalPokemonType').html(types);
+        $('#modalPokemonAbilities').text(abilities);
+        $('#modalPokemonStats').html(stats);
+        $('#modalPokemonImage').attr('src', imageUrl);
 
-            // Function to fetch and populate Pokémon data
-            function fetchAndPopulateData(url) {
-                $.get(url, function (response) {
-                    const requests = [];
+        // Show the modal
+        $('#pokemonModal').modal('show');
+    });
 
-                    response.results.forEach(pokemon => {
-                        // Fetch more details for each Pokémon using its URL
-                        const request = $.get(pokemon.url, function (pokemonDetails) {
-                            const row = [pokemonDetails.name, getTypes(pokemonDetails.types)];
-                            dataTable.row.add(row);
+    // Function to fetch all Pokémon data and populate the table
+    function fetchAllPokemonData() {
+        $.get(`${apiUrl}?limit=898`, function (data) {
+            const rows = [];
 
-                            // Check if all rows are added, then hide loading indicator
-                            if (dataTable.rows().count() === response.results.length) {
-                                $('#loading').hide();
-                                dataTable.draw(); // Redraw the table to display all data
-                            }
-                        });
+            data.results.forEach(function (pokemon, index) {
+                $.get(pokemon.url, function (pokemonData) {
+                    const name = capitalizeFirstLetter(pokemon.name);
+                    const types = pokemonData.types.map(type => capitalizeFirstLetter(type.type.name)).join(', ');
+                    const abilities = pokemonData.abilities.map(ability => capitalizeFirstLetter(ability.ability.name)).join(', ');
+                    const stats = pokemonData.stats.map(stat => ({
+                        name: capitalizeFirstLetter(stat.stat.name),
+                        value: stat.base_stat
+                    }));
 
-                        requests.push(request);
+                    rows.push({
+                        name: name,
+                        types: types,
+                        abilities: abilities,
+                        stats: stats,
+                        image: pokemonData.sprites.front_default
                     });
 
-                    // Wait for all requests to finish
-                    $.when.apply($, requests).then(function () {
-                        // Create pagination
-                        $('#pagination-container').pagination({
-                            dataSource: Array.from({ length: response.count }, (_, i) => i + 1),
-                            pageSize: 10,
-                            pageNumber: 1,
-                            callback: function (data, pagination) {
-                                // Update DataTable to display the selected page
-                                dataTable.page(pagination.pageNumber - 1).draw(false);
-                            }
-                        });
-                    });
+                    if (rows.length === 898) {
+                        table.rows.add(rows).draw();
+                        $('#loading').hide();
+                    }
                 });
-            }
-
-            // Function to extract and format Pokémon types
-            function getTypes(types) {
-                return types.map(type => type.type.name).join('/');
-            }
-
-            //const pokeApiUrl = `https://pokeapi.co/api/v2/pokemon/?limit=${pageSize}&offset=${offset}`;
-            // Start fetching Pokémon data
-            const pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon/?limit=' + pageLength;
-            fetchAndPopulateData(pokeApiUrl);
+            });
         });
+    }
+
+    // Function to capitalize the first letter of a string
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Initialize the Pokémon data
+    fetchAllPokemonData();
+});
+
+
+
+
+
     </script>    
 </body>
 </html>
