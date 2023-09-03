@@ -44,6 +44,15 @@ body {
 .pokemon-image {
     width: 50px; 
     height: 50px;
+}
+.pokemon-image-big {
+    width: 190px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+}
+.selected-row {
+    background-color: #f2f2f2; /* Change the background color to your desired color */
+}
+ /* Add cursor pointer to table rows */
+ #pokemonTable tbody tr {
     cursor: pointer;
 }
-  

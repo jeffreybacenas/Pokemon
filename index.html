@@ -12,6 +12,17 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="Assets/custom-css/style.css">
+    <style>
+        /* Add cursor pointer to table rows */
+        #pokemonTable tbody tr {
+            cursor: pointer;
+        }
+
+        /* Add custom row color when selected */
+        .selected-row {
+            background-color: #f5f5f5;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -56,7 +67,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="text-center">
-                                <img src="" alt="" id="modalPokemonImage" class="pokemon-image">
+                                <img src="" alt="" id="modalPokemonImage" class="pokemon-image-big">
                             </div>
                             <h5 class="modal-title" id="modalPokemonName"></h5>
                             <p class="modal-text" id="modalPokemonType"></p>
@@ -73,85 +84,88 @@
     <script src="Assets/bootstrap/bootstrap.min.js"></script>
     <script>
         $(document).ready(function () {
-    const apiUrl = 'https://pokeapi.co/api/v2/pokemon';
-    const table = $('#pokemonTable').DataTable({
-        columns: [
-            { data: 'name' },
-            { data: 'types' },
-            { data: 'abilities' },
-            { data: 'stats' },
-            { data: 'image', render: function (data, type, full, meta) {
-                return `<img src="${data}" alt="${full.name}" class="pokemon-image" data-index="${meta.row}">`;
-            }}
-        ]
-    });
+            const apiUrl = 'https://pokeapi.co/api/v2/pokemon';
 
-    // Handle click on Pokémon image to display details in modal
-    $('#pokemonTable tbody').on('click', 'img.pokemon-image', function () {
-        const index = $(this).data('index'); // Get the index of the selected Pokémon
-        const pokemonData = table.row(index).data(); // Get all Pokémon data
-        const abilities = pokemonData.abilities.join(', '); // Join abilities into a string
-        const stats = pokemonData.stats.map(stat => `${stat.name}: ${stat.value}`).join('<br>'); // Create a formatted string for stats
-        const name = capitalizeFirstLetter(pokemonData.name);
-        const types = capitalizeFirstLetter(pokemonData.types);
-        const imageUrl = $(this).attr('src');
+            // Initialize DataTables
+            const table = $('#pokemonTable').DataTable({
+                columns: [
+                    { data: 'name' },
+                    { data: 'types' },
+                    { data: 'image', render: function (data, type, full, meta) {
+                        return `<img src="${data}" alt="${full.name}" class="pokemon-image" data-name="${full.name.toLowerCase()}">`;
+                    }}
+                ]
+            });
 
-        // Update the Pokémon details in the modal
-        $('#modalPokemonName').text(name);
-        $('#modalPokemonType').html(types);
-        $('#modalPokemonAbilities').text(abilities);
-        $('#modalPokemonStats').html(stats);
-        $('#modalPokemonImage').attr('src', imageUrl);
+            // Function to handle click on Pokémon row
+            function handleRowClick() {
+                // Remove the 'selected-row' class from all rows
+                $('#pokemonTable tbody tr').removeClass('selected-row');
 
-        // Show the modal
-        $('#pokemonModal').modal('show');
-    });
+                // Add the 'selected-row' class to the clicked row
+                $(this).addClass('selected-row');
 
-    // Function to fetch all Pokémon data and populate the table
-    function fetchAllPokemonData() {
-        $.get(`${apiUrl}?limit=898`, function (data) {
-            const rows = [];
+                // Get the name of the Pokémon from the clicked row
+                const pokemonName = $(this).find('img.pokemon-image').data('name');
 
-            data.results.forEach(function (pokemon, index) {
-                $.get(pokemon.url, function (pokemonData) {
-                    const name = capitalizeFirstLetter(pokemon.name);
+                // Fetch Pokémon details by name and display them
+                fetchPokemonDetails(pokemonName);
+            }
+
+            // Handle click on Pokémon row to display details in modal
+            $('#pokemonTable tbody').on('click', 'tr', handleRowClick);
+
+            // Function to fetch Pokémon details by name and display them in the modal
+            function fetchPokemonDetails(name) {
+                $.get(`${apiUrl}/${name}`, function (pokemonData) {
+                    const name = capitalizeFirstLetter(pokemonData.name);
                     const types = pokemonData.types.map(type => capitalizeFirstLetter(type.type.name)).join(', ');
-                    const abilities = pokemonData.abilities.map(ability => capitalizeFirstLetter(ability.ability.name)).join(', ');
-                    const stats = pokemonData.stats.map(stat => ({
-                        name: capitalizeFirstLetter(stat.stat.name),
-                        value: stat.base_stat
-                    }));
+                    const imageUrl = pokemonData.sprites.front_default;
 
-                    rows.push({
-                        name: name,
-                        types: types,
-                        abilities: abilities,
-                        stats: stats,
-                        image: pokemonData.sprites.front_default
+                    // Update the Pokémon details in the modal
+                    $('#modalPokemonName').text(name);
+                    $('#modalPokemonType').html(`<strong>Type:</strong> ${types}`);
+                    $('#modalPokemonImage').attr('src', imageUrl);
+
+                    // Show the modal
+                    $('#pokemonModal').modal('show');
+                });
+            }
+
+            // Function to fetch all Pokémon data and populate the table
+            function fetchAllPokemonData() {
+                $.get(`${apiUrl}?limit=898`, function (data) {
+                    const rows = [];
+
+                    data.results.forEach(function (pokemon) {
+                        const name = capitalizeFirstLetter(pokemon.name);
+
+                        // Fetch Pokémon details by name and populate the 'types' and 'image' columns
+                        fetchPokemonDetails(pokemon.name);
+
+                        rows.push({
+                            name: name,
+                            types: '', // Initially empty
+                            image: '' // Initially empty
+                        });
                     });
 
-                    if (rows.length === 898) {
-                        table.rows.add(rows).draw();
-                        $('#loading').hide();
-                    }
+                    // Add the rows to the table
+                    table.rows.add(rows).draw();
+
+                    // Hide the loading indicator
+                    $('#loading').hide();
                 });
-            });
+            }
+
+            // Function to capitalize the first letter of a string
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            // Initialize the Pokémon data
+            fetchAllPokemonData();
         });
-    }
-
-    // Function to capitalize the first letter of a string
-    function capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    // Initialize the Pokémon data
-    fetchAllPokemonData();
-});
-
-
-
-
-
-    </script>    
+    </script>
 </body>
 </html>
