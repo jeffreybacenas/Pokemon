@@ -3,88 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokéfolio</title>
-
-    <link rel="icon" type="image/x-icon" href="Assets/image/icon-pokemon.png">
-    <!-- CSS -->
-    <link rel="stylesheet" href="Assets/jquery/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="Assets/bootstrap/bootstrap.min.css">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="Assets/custom-css/style.css">
-    <style>
-        /* Add cursor pointer to table rows */
-        #pokemonTable tbody tr {
-            cursor: pointer;
-        }
-
-        /* Add custom row color when selected */
-        .selected-row {
-            background-color: #f5f5f5;
-        }
-    </style>
+    <title>Pokémon Card</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="row card-container">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Loading indicator -->
-                        <div id="loading" class="text-center">
-                            <p>Loading Pokémon data...</p>
-                            <div class="spinner-border" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                        </div>
+<style>
+    
+.loader {
+  height: 60px;
+  aspect-ratio: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
-                        <!-- Table -->
-                        <table id="pokemonTable" class="table table-striped table-bordered pokemon-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Image</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+.loader::before,
+.loader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform-origin: bottom;
+}
 
-            <!-- Modal for Pokémon Details -->
-            <div class="modal fade" id="pokemonModal" tabindex="-1" role="dialog" aria-labelledby="pokemonModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="pokemonModalLabel">Pokémon Details</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="text-center">
-                                <img src="" alt="" id="modalPokemonImage" class="pokemon-image-big">
-                            </div>
-                            <h5 class="modal-title" id="modalPokemonName"></h5>
-                            <p class="modal-text" id="modalPokemonType"></p>
-                            <p class="modal-text" id="modalPokemonAbilities"></p>
-                            <p class="modal-text" id="modalPokemonStats"></p>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
+.loader::after {
+  background: radial-gradient(at 75% 15%,#fffb,#0000 35%),
+    radial-gradient(at 80% 40%,#0000,#0008),
+    radial-gradient(circle  5px,#fff 94%,#0000),
+    radial-gradient(circle 10px,#000 94%,#0000),
+    linear-gradient(#F93318 0 0) top   /100% calc(50% - 5px),
+    linear-gradient(#fff    0 0) bottom/100% calc(50% - 5px)
+    #000;
+  background-repeat: no-repeat;
+  animation: l20 1s infinite cubic-bezier(0.5,120,0.5,-120);
+}
+
+.loader::before {
+  background: #ddd;
+  filter: blur(8px);
+  transform: scaleY(0.4) translate(-13px, 0px);
+}
+
+@keyframes l20 {
+ 
+  30%,70% {
+    transform: rotate(0deg)
+  }
+
+  49.99% {
+    transform: rotate(0.2deg)
+  }
+
+  50% {
+    transform: rotate(-0.2deg)
+  }
+}
+body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Ensure full viewport height */
+        background-color: yellow; /* Default background color while loading */
+    }
+
+    /* Loader styles */
+
+    /* Add your loader styles here */
+
+    .card {
+        display: none;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        max-width: 600px;
+        text-align: left;
+        overflow: hidden;
+    }
+
+    .left {
+        float: left;
+        width: 50%;
+    }
+
+    .right {
+        float: right;
+        width: 50%;
+    }
+
+    .card h1 {
+        font-size: 24px;
+        margin: 10px 0;
+    }
+
+    .image-container {
+        text-align: center;
+    }
+
+    .image-container img {
+        max-width: 100%;
+        border: 4px solid #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    ul li {
+        margin-bottom: 5px;
+    }
+
+    button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Search styles */
+
+    .search-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    input[type="text"] {
+        padding: 5px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .search-button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+    .search-button:hover {
+        background-color: #0056b3;
+    }
+</style>
+<body><!-- Loader element -->
+    <div class="loader"></div>
+    <div class="card">
+        <div class="left">
+            <h1 id="poke-name"></h1>
+            <h2>Type</h2>
+            <ul id="type-list"></ul>
+            <h2>Abilities</h2>
+            <ul id="abilities-list"></ul>
+            <h3>Height:</h3>
+            <p id="poke-height"></p>
         </div>
+        <div class="right">
+            <div class="image-container">
+                <img id="poke-image" src="" alt="Pokémon Image">
+            </div>
+            <h3>Weight:</h3>
+            <p id="poke-weight"></p>
+            <h3>Base Stats:</h3>
+            <ul id="base-stats-list"></ul>
+        </div>
+        <div style="clear:both;"></div>
+        <button id="prev-button">Prev</button>
+        <button id="next-button">Next</button>
     </div>
 
-    <!-- JavaScript -->
+ <!-- Search container -->
+ <div class="search-container">
+    <input type="text" id="pokemon-search" placeholder="Enter Pokémon name or number">
+    <button class="search-button" id="search-button">Search</button>
+</div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="Assets/jquery/jquery.dataTables.min.js"></script>
-    <script src="Assets/bootstrap/bootstrap.min.js"></script>
-    <script src="Assets/custom-js/script.js"></script>
+    <script>
+        let currentPokemonNumber = 1;
+
+        function fetchPokemonName(pokemonNumber) {
+            // Show loader
+            $('.loader').show();
+
+            // Hide the .card
+            $('.card').hide();
+
+            // Simulate loading delay of 3 seconds
+            setTimeout(function() {
+                $.ajax({
+                    url: `https://pokeapi.co/api/v2/pokemon/${pokemonNumber}`,
+                    dataType: 'json',
+                    success: function(data) {
+                        const pokemonName = data.name.replace(/\b\w/g, (match) => match.toUpperCase());
+
+                        const pokemonImageUrl = data.sprites.front_default;
+                        const primaryType = data.types[0].type.name;
+                        const types = data.types.map(type => type.type.name);
+                        const abilities = data.abilities.map(ability => ability.ability.name);
+                        const height = data.height; // Height in decimetres
+                        const weight = data.weight; // Weight in hectograms
+                        const baseStats = data.stats.map(stat => `${stat.stat.name}: ${stat.base_stat}`);
+
+                        const backgroundColor = getBackgroundColor(primaryType);
+ 
+                        // Hide loader
+                        $('.loader').hide();
+
+                        // Show the .card
+                        $('.card').show();
+
+                        $('body').css('background-color', backgroundColor);
+
+                        $('#poke-name').text(pokemonName);
+                        $('#poke-image').attr('src', pokemonImageUrl);
+                        $('#type-list').empty();
+                        $('#abilities-list').empty();
+                        $('#poke-height').text(`${height / 10} m`);
+                        $('#poke-weight').text(`${weight / 10} kg`);
+                        $('#base-stats-list').empty();
+
+                        types.forEach(type => {
+                            $('#type-list').append(`<li>${type}</li>`);
+                        });
+
+                        abilities.forEach(ability => {
+                            $('#abilities-list').append(`<li>${ability}</li>`);
+                        });
+
+                        baseStats.forEach(stat => {
+                            $('#base-stats-list').append(`<li>${stat}</li>`);
+                        });
+                    }
+                });
+            }, 1000); 
+        }
+
+        fetchPokemonName(currentPokemonNumber);
+
+        $('#next-button').on('click', function() {
+            currentPokemonNumber++;
+            fetchPokemonName(currentPokemonNumber);
+        });
+
+        $('#prev-button').on('click', function() {
+            if (currentPokemonNumber > 1) {
+                currentPokemonNumber--;
+                fetchPokemonName(currentPokemonNumber);
+            }
+        });
+
+        function getBackgroundColor(type) {
+
+            const typeColors = {
+                normal: '#D3D3D3', // Normal
+                fire: '#FF5733', // Fire
+                water: '#3498DB', // Water
+                electric: '#F1C40F', // Electric
+                grass: '#2ECC71', // Grass
+                ice: '#AED6F1', // Ice
+                fighting: '#A569BD', // Fighting
+                poison: '#9B59B6', // Poison
+                ground: '#D68910', // Ground
+                flying: '#3498DB', // Flying
+                psychic: '#F06292', // Psychic
+                bug: '#2ECC71', // Bug
+                rock: '#D68910', // Rock
+                ghost: '#9B59B6', // Ghost
+                dragon: '#34495E', // Dragon
+                dark: '#212121', // Dark
+                steel: '#BDC3C7', // Steel
+                fairy: '#F06292', // Fairy
+            };
+
+            // Return the corresponding background color or a default color if not found
+            return typeColors[type] || '#fff'; // Default to white (#fff) if type is not found
+        }
+    </script>
 </body>
 </html>
