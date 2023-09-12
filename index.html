@@ -4,21 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css"><link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+ </head>
 <body>
     <div class="container">
-        <div class="card">
+        
+        <div class="card">              
             <img id="poke-image" src="" alt="">
             <h2 id="poke-name"></h2>
             <p id="poke-about"></p>
+
             <a id="prev-button" class="btn">Prev</a>
+            <select id="pokemon-select">
+                <option value="">Select a Pokémon</option>
+            </select>
             <a id="next-button" class="btn">Next</a>
+
         </div>
 
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
+
+        $(document).ready(function() {
+            $('#pokemon-select').select2();
+        });
+
         let currentPokemonNumber = 1;
 
         function fetchPokemonName(pokemonNumber) {
@@ -70,6 +83,46 @@
                 fetchPokemonName(currentPokemonNumber);
             }
         });
+
+        // Function to fetch and populate the list of Pokémon in the <select> element
+        function fetchPokemonList() {
+        $.ajax({
+            url: 'https://pokeapi.co/api/v2/pokemon/?limit=1000', // You can adjust the limit as needed
+            dataType: 'json',
+            success: function (data) {
+            const pokemonSelect = $('#pokemon-select');
+
+            // Iterate through the results and add each Pokémon as an <option> element
+            data.results.forEach(function (pokemon) {
+                const option = $('<option></option>');
+                option.val(pokemon.url); // Store the URL of the Pokémon
+                option.text(pokemon.name.replace(/\b\w/g, (match) => match.toUpperCase()));
+                pokemonSelect.append(option);
+            });
+            },
+        });
+        }
+
+        // Call the function to populate the <select> element
+        fetchPokemonList();
+
+        // Event handler for when a Pokémon is selected
+        $('#pokemon-select').on('change', function () {
+        const selectedPokemonUrl = $(this).val();
+
+        if (selectedPokemonUrl) {
+            // Extract the Pokémon's ID from the URL
+            const pokemonId = selectedPokemonUrl.split('/').slice(-2, -1)[0];
+
+            // Call the fetchPokemonName function with the selected Pokémon's ID
+            fetchPokemonName(pokemonId);
+        } else {
+            // Handle the case when "Select a Pokémon" is chosen
+            // You can clear the Pokémon details here if needed
+        }
+        });
+
+
     </script>    
 </body>
 </html>
