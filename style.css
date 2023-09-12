@@ -31,12 +31,6 @@
     width: 140px;
     border-radius: 50%;
 }
-.card p{
-    font-size: 18px;
-    margin: 10px auto;
-    max-width: 330px;
-    color: black;
-}
 .card .links{
     width: 30px;
     margin: 10px ;
