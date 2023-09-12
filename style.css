@@ -8,7 +8,7 @@
 .container{
     width: 100%;
     height: 100vh;
-    background-image: url(background2.png);
+    background-image: url(background.jpg);
     background-size: cover; /* Ensures the background image covers the entire container */
     background-position: center; /* Centers the background image horizontally and vertically */
     background-repeat: no-repeat; 
@@ -30,12 +30,6 @@
 .card img{
     width: 140px;
     border-radius: 50%;
-}
-.card h2{
-    font-size: 30px;
-    font-weight: 600;
-    margin-top: 20px;
-    color: #A8A878;
 }
 .card p{
     font-size: 18px;
@@ -59,3 +53,77 @@
     margin: 30px 0 10px;
     cursor: pointer;
 }
+
+/* Example text colors, you can adjust them as needed */
+.normal-text {
+    color: #333; /* Dark gray for Normal type */
+}
+
+.fire-text {
+    color: #FF6C6C; /* Red for Fire type */
+}
+
+.water-text {
+    color: #6493EB; /* Blue for Water type */
+}
+
+.grass-text {
+    color: #7AC74C; /* Green for Grass type */
+}
+
+.electric-text {
+    color: #F7D02C; /* Yellow for Electric type */
+}
+
+.ice-text {
+    color: #96D9D6; /* Light blue for Ice type */
+}
+
+.fighting-text {
+    color: #C22E28; /* Dark red for Fighting type */
+}
+
+.poison-text {
+    color: #A33EA1; /* Purple for Poison type */
+}
+
+.ground-text {
+    color: #E2BF65; /* Brown for Ground type */
+}
+
+.flying-text {
+    color: #A98FF3; /* Light purple for Flying type */
+}
+
+.psychic-text {
+    color: #F95587; /* Pink for Psychic type */
+}
+
+.bug-text {
+    color: #A6B91A; /* Green for Bug type */
+}
+
+.rock-text {
+    color: #B6A136; /* Brown for Rock type */
+}
+
+.ghost-text {
+    color: #735797; /* Dark purple for Ghost type */
+}
+
+.dark-text {
+    color: #705746; /* Dark brown for Dark type */
+}
+
+.steel-text {
+    color: #B7B7CE; /* Light gray for Steel type */
+}
+
+.fairy-text {
+    color: #D685AD; /* Pinkish for Fairy type */
+}
+
+.dragon-text {
+    color: #6F35FC; /* Purple for Dragon type */
+}
+

@@ -22,13 +22,7 @@
         let currentPokemonNumber = 1;
 
         function fetchPokemonName(pokemonNumber) {
-            // Show loader
-            //$('.loader').show();
-
-            // Hide the .card
-            //$('.card').hide();
-
-            // Simulate loading delay of 3 seconds
+            
             setTimeout(function() {
                 $.ajax({
                     url: `https://pokeapi.co/api/v2/pokemon/${pokemonNumber}`,
@@ -48,6 +42,11 @@
                        
                         $('#poke-name').text(pokemonName);
                         $('#poke-image').attr('src', pokemonImageUrl);
+                        
+                        const pokemonNameElement = $('#poke-name');
+                        // Add a class corresponding to the primary type
+                        pokemonNameElement.removeClass().addClass(primaryType + '-text');
+                        pokemonNameElement.text(pokemonName);
 
                     }
                 });
