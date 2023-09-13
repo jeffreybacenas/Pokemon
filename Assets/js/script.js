@@ -1,13 +1,13 @@
-$(document).ready(function() {
-    $('#pokemon-select').select2();
-});
+    $(document).ready(function() {
+        $('#pokemon-select').select2();
+    });
 
-let currentPokemonNumber = 1;
+    let currentPokemonNumber = 1;
 
-function fetchPokemonName(pokemonNumber) {
+    function fetchPokemonName(pokemonNumber) {
     
-    setTimeout(function() {
-        $.ajax({
+        setTimeout(function() {
+            $.ajax({
             url: `https://pokeapi.co/api/v2/pokemon/${pokemonNumber}`,
             dataType: 'json',
             success: function(data) {
@@ -35,59 +35,59 @@ function fetchPokemonName(pokemonNumber) {
                 // Set the Pokémon image in #poke-image
                 $('#poke-image').attr('src', pokemonImageUrl);
 
+                    }
+                });
+            }, 1000); 
+        }
+
+        fetchPokemonName(currentPokemonNumber);
+
+        $('#next-button').on('click', function() {
+            currentPokemonNumber++;
+            fetchPokemonName(currentPokemonNumber);
+        });
+
+        $('#prev-button').on('click', function() {
+            if (currentPokemonNumber > 1) {
+                currentPokemonNumber--;
+                fetchPokemonName(currentPokemonNumber);
             }
         });
-    }, 1000); 
-}
 
-fetchPokemonName(currentPokemonNumber);
+        // Function to fetch and populate the list of Pokémon in the <select> element
+        function fetchPokemonList() {
+        $.ajax({
+            url: 'https://pokeapi.co/api/v2/pokemon/?limit=1000', // You can adjust the limit as needed
+            dataType: 'json',
+            success: function (data) {
+            const pokemonSelect = $('#pokemon-select');
 
-$('#next-button').on('click', function() {
-    currentPokemonNumber++;
-    fetchPokemonName(currentPokemonNumber);
-});
+            // Iterate through the results and add each Pokémon as an <option> element
+            data.results.forEach(function (pokemon) {
+                const option = $('<option></option>');
+                option.val(pokemon.url); // Store the URL of the Pokémon
+                option.text(pokemon.name.replace(/\b\w/g, (match) => match.toUpperCase()));
+                pokemonSelect.append(option);
+            });
+            },
+        });
+        }
 
-$('#prev-button').on('click', function() {
-    if (currentPokemonNumber > 1) {
-        currentPokemonNumber--;
-        fetchPokemonName(currentPokemonNumber);
-    }
-});
+        // Call the function to populate the <select> element
+        fetchPokemonList();
 
-// Function to fetch and populate the list of Pokémon in the <select> element
-function fetchPokemonList() {
-$.ajax({
-    url: 'https://pokeapi.co/api/v2/pokemon/?limit=1000', // You can adjust the limit as needed
-    dataType: 'json',
-    success: function (data) {
-    const pokemonSelect = $('#pokemon-select');
+        // Event handler for when a Pokémon is selected
+        $('#pokemon-select').on('change', function () {
+        const selectedPokemonUrl = $(this).val();
 
-    // Iterate through the results and add each Pokémon as an <option> element
-    data.results.forEach(function (pokemon) {
-        const option = $('<option></option>');
-        option.val(pokemon.url); // Store the URL of the Pokémon
-        option.text(pokemon.name.replace(/\b\w/g, (match) => match.toUpperCase()));
-        pokemonSelect.append(option);
-    });
-    },
-});
-}
+        if (selectedPokemonUrl) {
+            // Extract the Pokémon's ID from the URL
+            const pokemonId = selectedPokemonUrl.split('/').slice(-2, -1)[0];
 
-// Call the function to populate the <select> element
-fetchPokemonList();
-
-// Event handler for when a Pokémon is selected
-$('#pokemon-select').on('change', function () {
-const selectedPokemonUrl = $(this).val();
-
-if (selectedPokemonUrl) {
-    // Extract the Pokémon's ID from the URL
-    const pokemonId = selectedPokemonUrl.split('/').slice(-2, -1)[0];
-
-    // Call the fetchPokemonName function with the selected Pokémon's ID
-    fetchPokemonName(pokemonId);
-} else {
-    // Handle the case when "Select a Pokémon" is chosen
-    // You can clear the Pokémon details here if needed
-}
+            // Call the fetchPokemonName function with the selected Pokémon's ID
+            fetchPokemonName(pokemonId);
+        } else {
+            // Handle the case when "Select a Pokémon" is chosen
+            // You can clear the Pokémon details here if needed
+        }
 });
